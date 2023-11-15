@@ -1,0 +1,153 @@
+﻿@page
+@model MangaClient.Pages.Manga.UpdateModel
+@{
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <h1 class="text-white">Cập Nhật Manga</h1>
+
+    <form id="updateForm">
+        <div class="form-group">
+            <label for="title">Tiêu đề:</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="author">Tác giả:</label>
+            <input type="text" class="form-control" id="author" name="author" required>
+        </div>
+        <div class="form-group">
+            <label for="categories">Danh mục:</label>
+            <select class="form-control" id="categories" name="categories" required>
+                <!-- Option để hiển thị danh sách danh mục từ API -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="thumbnailImage">Ảnh đại diện:</label>
+            <input type="text" class="form-control" id="thumbnailImage" name="thumbnailImage" required>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="updateManga()">Cập Nhật</button>
+    </form>
+
+    <!-- Trong trang Update.cshtml -->
+    <script>
+        $(document).ready(function () {
+            var mangaId = getParameterByName("id");
+
+            if (mangaId) {
+                // Gọi API để lấy thông tin manga
+                $.ajax({
+                    url: "https://localhost:5000/api/Manga/" + mangaId,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        // Điền thông tin manga vào form
+                        $("#title").val(data.title);
+                        $("#author").val(data.authorName);
+                        $("#thumbnailImage").val(data.thumbnailImage);
+                        $("#categories").val(data.categoryNames.join(", "));
+
+                        // Thêm ID vào form ẩn
+                        $("#mangaId").val(data.id);
+
+                        // Load danh sách danh mục từ API và hiển thị trong dropdown
+                        loadCategories();
+                    },
+                    error: function (error) {
+                        console.error("Lỗi khi gọi API:", error);
+                    }
+                });
+            }
+        });
+
+        // Hàm cập nhật manga
+        function updateManga() {
+            var mangaId = getParameterByName("id");
+
+            if (mangaId) {
+                var updateData = {
+                    id: parseInt(mangaId), // Chắc chắn rằng id là kiểu số nguyên
+                    title: $("#title").val(),
+                    description: "string", // Thêm các thuộc tính khác với giá trị mặc định nếu cần thiết
+                    createDate: new Date().toISOString(),
+                    viewCount: 0,
+                    thumbnailImage: $("#thumbnailImage").val(),
+                    categoryNames: $("#categories").val().split(",").map(function (category) { return category.trim(); }),
+                    authorName: $("#author").val()
+                };
+
+                // Gửi yêu cầu PUT để cập nhật manga
+                $.ajax({
+                    url: "https://localhost:5000/api/Manga/" + mangaId,
+                    type: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify(updateData),
+                    success: function () {
+                        // Chuyển hướng về trang danh sách sau khi cập nhật thành công
+                        window.location.href = "https://localhost:5001/Manga/List";
+                    },
+                    error: function (error) {
+                        console.error("Lỗi khi gọi API:", error);
+                    }
+                });
+            }
+        }
+
+        // Hàm để lấy giá trị của query parameter từ URL
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return "";
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+        // Hàm để load danh sách danh mục từ API và hiển thị trong dropdown
+        function loadCategories() {
+            $.ajax({
+                url: "https://localhost:5000/api/Category",
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    // Xử lý dữ liệu trả về từ API
+                    displayCategories(data);
+                },
+                error: function (error) {
+                    console.error("Lỗi khi gọi API danh mục:", error);
+                }
+            });
+        }
+
+        // Hàm để hiển thị danh sách danh mục trong dropdown
+        function displayCategories(categories) {
+            var dropdown = $("#categories");
+
+            // Xóa nội dung cũ trước khi thêm mới
+            dropdown.empty();
+
+            // Thêm các tùy chọn từ danh sách danh mục
+            for (var i = 0; i < categories.length; i++) {
+                var category = categories[i];
+                var option = $("<option>")
+                    .val(category.name)
+                    .text(category.name);
+                dropdown.append(option);
+            }
+        }
+    </script>
+
+    <!-- Thêm trường ẩn để giữ ID của manga -->
+    <input type="hidden" id="mangaId" name="mangaId" />
+
+</body>
+
+</html>

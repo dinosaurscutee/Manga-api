@@ -1,0 +1,110 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <h1 class="text-white">Danh Sách Manga</h1>
+    <a href="/Manga/Create">Create Manga</a>
+    <table class="table table-bordered" id="mangaTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Category</th>
+                <th>Thumbnail</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+           
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function () {
+            // Gọi API để lấy danh sách manga khi trang được tải
+            loadMangaList();
+
+            function loadMangaList() {
+                // Địa chỉ API của bạn
+                var apiUrl = "https://localhost:5000/api/Manga";
+
+                $.ajax({
+                    url: apiUrl,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        // Xử lý dữ liệu trả về từ API
+                        displayMangaList(data);
+                    },
+                    error: function (error) {
+                        console.error("Lỗi khi gọi API:", error);
+                    }
+                });
+            }
+
+            function displayMangaList(mangaList) {
+                // Hiển thị danh sách manga trên trang
+                var tableBody = $("#mangaTable tbody");
+
+                // Xóa nội dung cũ trước khi thêm mới
+                tableBody.empty();
+
+                // Duyệt qua danh sách manga và thêm vào bảng
+                for (var i = 0; i < mangaList.length; i++) {
+                    var manga = mangaList[i];
+
+                    var mangaHtml =
+                        "<tr>" +
+                        "<td>" + manga.id + "</td>" +
+                        "<td><a href='https://localhost:5001/Manga/Details?id=" + manga.id + "'>" + manga.title + "</a></td>" +
+                        "<td>" + manga.authorName + "</td>" +
+                        "<td>" + manga.categoryNames.join(", ") + "</td>" +
+                        "<td><img src='" + manga.thumbnailImage + "' alt='" + manga.title + " thumbnail' style='width: 50px; height: 60px;'></td>" +
+                        "<td><a href='https://localhost:5001/Manga/Update?id=" + manga.id + "'>Update</a></td>" +
+                        "<td><a href='#' class='delete-button' data-id='" + manga.id + "'>Delete</a></td>" +
+                        "</tr>";
+
+                    tableBody.append(mangaHtml);
+                }
+
+                // Thêm sự kiện cho nút "Delete"
+                $(".delete-button").click(function () {
+                    var mangaId = $(this).data("id");
+                    deleteManga(mangaId);
+                });
+            }
+
+            function deleteManga(id) {
+                // Địa chỉ API của bạn để xóa manga
+                var deleteUrl = "https://localhost:5000/api/Manga/" + id;
+
+                $.ajax({
+                    url: deleteUrl,
+                    type: "DELETE",
+                    success: function () {
+                        // Nếu xóa thành công, tải lại danh sách manga
+                        loadMangaList();
+                    },
+                    error: function (error) {
+                        console.error("Lỗi khi xóa manga:", error);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

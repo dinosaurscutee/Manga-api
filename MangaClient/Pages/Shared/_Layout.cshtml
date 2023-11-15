@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MangaClient</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MangaClient.styles.css" asp-append-version="true" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-white bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-page="/Index"><img src="~/img/moi-tai-bo-anh-nen-vui-ve-chat-luong-cao-cho-smartphone-va-pc-fptshop-3.jpg" class="img-fluid" style="width:60px; border-radius:32px;"></img></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-black" asp-area="" asp-page="/Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-black" asp-area="" asp-page="/Manga/list">list</a>
+                        </li>
+                    </ul>
+                    <div id="user-info-container"></div>
+                </div>
+            </div>
+        </nav>
+
+    </header>
+    <div class="container container-fluid">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2023 - MangaClient
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js" defer></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            checkLoginStatus();
+
+            // Thêm sự kiện cho nút đăng xuất (nếu cần)
+            $(document).on("click", "#logout-button", function () {
+                logout();
+            });
+        });
+
+        function checkLoginStatus() {
+            $.ajax({
+                type: "GET",
+                url: "https://localhost:5000/api/auth/user",
+                success: function (data) {
+                    console.log(data); // In dữ liệu trả về để kiểm tra
+                    if (data.UserId) {
+                        // Đã đăng nhập, hiển thị tên người dùng và nút đăng xuất
+                        $("#user-info-container").html("Hello, " + data.Username + " | <a href='#' id='logout-button'>Logout</a>");
+                    } else {
+                        // Chưa đăng nhập, hiển thị nút đăng nhập
+                        $("#user-info-container").html("<a href='/Auth/Login'>Login</a>");
+                    }
+                },
+                error: function () {
+                    console.error("Error checking login status");
+                }
+            });
+        }
+
+
+        function logout() {
+            $.ajax({
+                type: "POST",
+                url: "https://localhost:5000/api/auth/logout", // Đặt URL logout của bạn
+                success: function () {
+                    // Xóa trạng thái đăng nhập trên client
+                    $("#user-info-container").html("<a href='/Auth/Login'>Login</a>");
+                },
+                error: function () {
+                    console.error("Error logging out");
+                }
+            });
+        }
+    </script>
+
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+
+
+</body>
+</html>

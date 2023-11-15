@@ -1,0 +1,102 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+
+<body>
+    <input type="text" id="searchInput" placeholder="Tìm kiếm manga theo tên">
+    <button id="searchButton">Tìm kiếm</button>
+
+    <h1 class="text-white">Danh Sách Manga</h1>
+
+    <div id="mangaList" style="display: flex;" class="container-fluid">
+        <!-- Danh sách manga sẽ được hiển thị ở đây -->
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Gọi API để lấy danh sách manga khi trang được tải
+            loadMangaList();
+
+            // Xử lý sự kiện khi người dùng click nút tìm kiếm
+            $("#searchButton").click(function () {
+                var searchTerm = $("#searchInput").val();
+                if (searchTerm.trim() !== "") {
+                    searchMangaByName(searchTerm);
+                }
+            });
+
+            function loadMangaList() {
+                // Địa chỉ API của bạn
+                var apiUrl = "https://localhost:5000/api/Manga";
+
+                $.ajax({
+                    url: apiUrl,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        // Xử lý dữ liệu trả về từ API
+                        displayMangaList(data);
+                    },
+                    error: function (error) {
+                        console.error("Lỗi khi gọi API:", error);
+                    }
+                });
+            }
+
+            function searchMangaByName(searchTerm) {
+                var apiUrl = "https://localhost:5000/api/Manga/search/" + encodeURIComponent(searchTerm);
+
+                $.ajax({
+                    url: apiUrl,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        displayMangaList(data);
+                    },
+                    error: function (error) {
+                        console.error("Lỗi khi gọi API tìm kiếm:", error);
+                    }
+                });
+            }
+
+            function displayMangaList(mangaList) {
+                // Hiển thị danh sách manga trên trang
+                var mangaContainer = $("#mangaList");
+
+                // Xóa nội dung cũ trước khi thêm mới
+                mangaContainer.empty();
+
+                // Duyệt qua danh sách manga và thêm vào HTML
+                for (var i = 0; i < mangaList.length; i++) {
+                    var manga = mangaList[i];
+
+                    var mangaHtml =
+                        "<div style='margin-right: 80px; text-align: center;'>" +
+                        "<a href='https://localhost:5001/Manga/Details?id=" + manga.id + "'>" +
+                        "<img src='" + manga.thumbnailImage + "' alt='" + manga.title + " thumbnail' style='width: 176px; height: 220px;'></a>" +
+                        "<br>" +
+                        "<a href='https://localhost:5001/Manga/Details?id=" + manga.id + "' style='text-decoration: none; color:black;'>" + manga.title + "</a><br>" +
+                        "</div><br>";
+
+                    mangaContainer.append(mangaHtml);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+
+

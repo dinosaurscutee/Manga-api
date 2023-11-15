@@ -1,0 +1,69 @@
+﻿@page
+@model MangaClient.Pages.Manga.DetailsModel
+@{
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Details</title>
+</head>
+
+<body>
+    <h1 id="mangaTitle">Loading...</h1>
+    <div id="mangaDetails">
+        <!-- Nơi hiển thị chi tiết manga -->
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Lấy id từ tham số trên URL
+            var urlParams = new URLSearchParams(window.location.search);
+            var mangaId = urlParams.get('id');
+
+            // Gọi API để lấy chi tiết manga
+            var apiUrl = "https://localhost:5000/api/Manga/" + mangaId;
+
+            $.ajax({
+                url: apiUrl,
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    // Hiển thị chi tiết manga
+                    displayMangaDetails(data);
+                },
+                error: function (error) {
+                    console.error("Lỗi khi gọi API:", error);
+                }
+            });
+
+            function displayMangaDetails(manga) {
+                // Hiển thị chi tiết manga
+                $("#mangaTitle").text(manga.title);
+
+                var mangaDetails = $("#mangaDetails");
+                mangaDetails.empty();
+
+                // Thêm các chi tiết khác vào HTML
+                var categoriesHtml = "<strong>Categories:</strong> " + manga.categoryNames.join(', ') + "<br>";
+
+                var mangaHtml =
+                    "<strong>Author:</strong> " + manga.authorName + "<br>" +
+                    categoriesHtml +
+                    "<strong>Description:</strong> " + manga.description + "<br>" +
+                    "<strong>View Count:</strong> " + manga.viewCount + "<br>" +
+                    "<img src='" + manga.thumbnailImage + "' alt='" + manga.title + " thumbnail' style='width: 176px; height: 220px;'>";
+
+                mangaDetails.append(mangaHtml);
+            }
+
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,110 @@
+﻿@page
+@model MangaClient.Pages.Manga.CreateModel
+@{
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <h1 class="text-white">Tạo mới Manga</h1>
+
+    <form id="createForm">
+        <div class="form-group">
+            <label for="title">Tiêu đề:</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="author">Tác giả:</label>
+            <input type="text" class="form-control" id="author" name="author" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Mô tả:</label>
+            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="categories">Danh mục:</label>
+            <select class="form-control" id="categories" name="categories" required>
+                <!-- Option để hiển thị danh sách danh mục từ API -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="thumbnailImage">Ảnh đại diện:</label>
+            <input type="text" class="form-control" id="thumbnailImage" name="thumbnailImage" required>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="createManga()">Tạo mới</button>
+    </form>
+
+    <script>
+        // Hàm tạo mới manga
+        function createManga() {
+            var createData = {
+                title: $("#title").val(),
+                authorName: $("#author").val(),
+                description: $("#description").val(),
+                categoryNames: [$("#categories").val()], // Lấy giá trị từ dropdown (chọn một)
+                thumbnailImage: $("#thumbnailImage").val()
+            };
+
+            // Gửi yêu cầu POST để tạo mới manga
+            $.ajax({
+                url: "https://localhost:5000/api/Manga",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(createData),
+                success: function () {
+                    // Chuyển hướng về trang danh sách sau khi tạo mới thành công
+                    window.location.href = "https://localhost:5001/Manga/List";
+                },
+                error: function (error) {
+                    console.error("Lỗi khi gọi API:", error);
+                }
+            });
+        }
+
+        // Hàm để load danh sách danh mục từ API và hiển thị trong dropdown
+        function loadCategories() {
+            $.ajax({
+                url: "https://localhost:5000/api/Category",
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    // Xử lý dữ liệu trả về từ API
+                    displayCategories(data);
+                },
+                error: function (error) {
+                    console.error("Lỗi khi gọi API danh mục:", error);
+                }
+            });
+        }
+
+        // Hàm để hiển thị danh sách danh mục trong dropdown
+        function displayCategories(categories) {
+            var dropdown = $("#categories");
+
+            // Xóa nội dung cũ trước khi thêm mới
+            dropdown.empty();
+
+            // Thêm các tùy chọn từ danh sách danh mục
+            for (var i = 0; i < categories.length; i++) {
+                var category = categories[i];
+                var option = $("<option>")
+                    .val(category.name)
+                    .text(category.name);
+                dropdown.append(option);
+            }
+        }
+
+        // Gọi hàm để load danh sách danh mục khi trang được tải
+        $(document).ready(function () {
+            loadCategories();
+        });
+    </script>
+</body>
+
+</html>
